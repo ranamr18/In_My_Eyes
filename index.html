@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>In My Eyes, It's You</title>
+<style>
+  :root{
+    --navy-deep: #050810;
+    --navy-mid: #0a1224;
+    --navy-soft: #121d36;
+    --gold: #e8c992;
+    --gold-bright: #f5dca8;
+    --cream: #f3ecdf;
+    --cream-dim: #cfc6b3;
+  }
+ 
+  *{ margin:0; padding:0; box-sizing:border-box; }
+ 
+  html, body{
+    width:100%; height:100%;
+    background: var(--navy-deep);
+    overflow:hidden;
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+  }
+ 
+  #stage{
+    position:relative;
+    width:100vw; height:100vh;
+    overflow:hidden;
+  }
+ 
+  /* ---------- Sky ---------- */
+  #sky{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse at 30% 15%, rgba(40,60,110,0.35), transparent 45%),
+      radial-gradient(ellipse at 80% 10%, rgba(70,90,150,0.25), transparent 50%),
+      linear-gradient(to bottom, #03050c 0%, #060a16 35%, #0a1326 65%, #0d1830 100%);
+  }
+ 
+  /* faint nebula wisps */
+  .nebula{
+    position:absolute;
+    filter: blur(40px);
+    opacity:0.35;
+    pointer-events:none;
+  }
+  .nebula.n1{
+    width:520px; height:300px;
+    top:8%; left:-5%;
+    background: radial-gradient(ellipse, rgba(80,100,170,0.5), transparent 70%);
+    transform: rotate(-12deg);
+  }
+  .nebula.n2{
+    width:600px; height:380px;
+    top:0%; right:-8%;
+    background: radial-gradient(ellipse, rgba(120,140,210,0.45), transparent 70%);
+    transform: rotate(18deg);
+  }
+ 
+  canvas#stars{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+  }
+ 
+  /* ---------- Ocean ---------- */
+  #ocean{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:30%;
+    background: linear-gradient(to bottom, #0a1428 0%, #060d1c 60%, #04081655 100%);
+  }
+  #horizon-glow{
+    position:absolute;
+    left:50%; bottom:30%;
+    width:140px; height:3px;
+    transform: translateX(-50%);
+    background: linear-gradient(to right, transparent, var(--gold-bright), transparent);
+    box-shadow: 0 0 25px 4px rgba(232,201,146,0.6);
+    opacity:0.8;
+  }
+  #reflection{
+    position:absolute;
+    left:50%; bottom:0;
+    width:2px; height:30%;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, rgba(232,201,146,0.55), transparent);
+    filter: blur(1px);
+  }
+  .wave-line{
+    position:absolute;
+    left:0; right:0;
+    height:1px;
+    background: linear-gradient(to right, transparent, rgba(150,170,210,0.18), transparent);
+  }
+ 
+  /* ---------- Center content ---------- */
+  #center{
+    position:absolute;
+    top:50%; left:50%;
+    transform: translate(-50%, -55%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    width:90%;
+    max-width:640px;
+    z-index:10;
+  }
+ 
+  #lead-text{
+    font-size: clamp(15px, 2vw, 19px);
+    font-weight:400;
+    font-style: italic;
+    letter-spacing:0.02em;
+    color: var(--cream);
+    line-height:1.7;
+    margin-bottom: 48px;
+    opacity:0;
+    animation: fadeIn 2s ease 0.4s forwards;
+    text-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+ 
+  #cta{
+    position:relative;
+    padding: 22px 46px;
+    border-radius: 999px;
+    border: 1px solid rgba(232,201,146,0.55);
+    background: rgba(8,12,22,0.55);
+    backdrop-filter: blur(6px);
+    color: var(--cream);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(17px, 2.4vw, 22px);
+    letter-spacing: 0.12em;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    opacity:0;
+    animation: fadeInUp 1.6s ease 1.2s forwards;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+    box-shadow: 0 0 0px rgba(232,201,146,0);
+  }
+ 
+  #cta::before{
+    content:'';
+    position:absolute;
+    top:-1px; left:18%; right:18%;
+    height:1px;
+    background: linear-gradient(to right, transparent, var(--gold-bright), transparent);
+    opacity:0.9;
+  }
+ 
+  #cta:hover{
+    transform: translateY(-2px) scale(1.015);
+    border-color: rgba(245,220,168,0.85);
+    box-shadow: 0 8px 40px rgba(232,201,146,0.18);
+  }
+ 
+  #cta .spark{
+    width: 0.8em;
+    height: 0.8em;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    animation: glow 3.4s ease-in-out infinite;
+  }
+  #cta .spark svg{
+    width:100%; height:100%;
+    display:block;
+  }
+  #lyrics{
+  position: fixed;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 80%;
+  max-width: 700px;
+
+  color: var(--cream);
+
+  font-size: 24px;
+  text-align: center;
+  line-height: 1.8;
+  white-space: pre-line;
+
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+/* fade-out transition when clicked */
+  #stage.leaving #lead-text,
+#stage.leaving #cta{
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: opacity 1.4s ease;
+}
+ 
+  @keyframes fadeIn{
+    to{ opacity:1; }
+  }
+  @keyframes fadeInUp{
+    from{ opacity:0; transform: translateY(14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  @keyframes glow{
+    0%, 100%{ opacity:0.55; filter: drop-shadow(0 0 1px rgba(232,201,146,0.3)); }
+    50%{ opacity:1; filter: drop-shadow(0 0 6px rgba(245,220,168,0.9)); }
+  }
+ 
+  
+ 
+  @media (prefers-reduced-motion: reduce){
+    #lead-text, #cta{ animation: none; opacity:1; }
+  }
+</style>
+</head>
+<body>
+ 
+<div id="stage">
+  <div id="sky">
+    <div class="nebula n1"></div>
+    <div class="nebula n2"></div>
+  </div>
+  <canvas id="stars"></canvas>
+ 
+  <div id="ocean"></div>
+  <div id="horizon-glow"></div>
+  <div id="reflection"></div>
+ 
+  <div id="center">
+    <p id="lead-text">There are things I feel for you that never come out right in words&hellip;<br>maybe this is the closest I can get.</p>
+    <button id="cta">
+      <span>In My Eyes, It&rsquo;s You</span>
+      <span class="spark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0C12.3 5.5 13 9.5 12 12C13 14.5 12.3 18.5 12 24C11.7 18.5 11 14.5 12 12C11 9.5 11.7 5.5 12 0Z" fill="#f5dca8"/>
+          <path d="M0 12C5.5 11.7 9.5 11 12 12C14.5 11 18.5 11.7 24 12C18.5 12.3 14.5 13 12 12C9.5 13 5.5 12.3 0 12Z" fill="#f5dca8"/>
+        </svg>
+      </span>
+    </button>
+    <div id="lyrics"></div>
+  </div>
+</div>
+ 
+<script>
+    const lyrics = [
+
+`I still remember that day we sat outside
+no rush, just you and I in the quiet light`,
+
+`you were holding my hand, but you couldn’t let it go
+like you were saying things you didn’t know how to show`,
+
+`you looked down at us like it meant more than words
+so soft, so quiet, like the world had blurred`,
+
+`and in that moment I swear I just knew
+that all of my heart belongs to you`,
+
+`maybe you never knew
+but in my eyes you were everything I knew`,
+
+`the most beautiful eyes I’ve ever seen
+and a smile that stays in me like a dream`,
+
+`your kindness that you never speak too loud
+and something deeper that stays hidden in your calm`,
+
+`maybe you never knew
+but I always saw you`,
+
+`and somehow you made me feel it too
+how you’re the beat to my every breath`,
+
+`when you look at me like that again
+and your eyes fall quiet in your hands`,
+
+`I melt, I don’t even know what to say
+it feels like I’m losing my breath that way`,
+
+`I see the way you try to hide it all
+the love in you, the pain behind the fall`,
+
+`and I wish I could tell you right then and there
+I can’t imagine a world where you’re not here`,
+
+`I can’t imagine losing you from my side
+or living in a world where you’re not mine`,
+
+`and it hurts me more than I can explain
+to know you’re holding so much pain`,
+
+`I don’t always know how to say it right
+but I see you in every part of my mind`,
+
+`your eyes, your smile, the way you stay in me
+your face, your hair, the calm you make me feel`,
+
+`and if you ever doubt what I feel for you
+just know I’ve always been drawn to you`,
+
+`in every quiet way I never explain
+it’s you I see… it’s you I choose again`,
+
+`maybe you never knew
+but in my eyes you were everything I knew`,
+
+`maybe you never knew
+but I always saw you.`,
+];
+
+let index = 0;
+const box = document.getElementById("lyrics");
+  // ---- Starfield ----
+  const audio = new Audio("Uplift.mp3");
+  audio.addEventListener("ended", () => {
+
+  box.style.opacity = 0;
+
+  setTimeout(() => {
+    box.innerText = "I will always love you";
+    box.style.opacity = 1;
+  }, 1200);
+
+});
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+ 
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    generateStars();
+  }
+ 
+  function generateStars(){
+    stars = [];
+    const count = Math.floor((canvas.width * canvas.height) / 4500);
+    for(let i=0; i<count; i++){
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.75, // keep stars above ocean
+        r: Math.random() * 1.4 + 0.2,
+        baseAlpha: Math.random() * 0.6 + 0.25,
+        twinkleSpeed: Math.random() * 0.015 + 0.004,
+        phase: Math.random() * Math.PI * 2,
+        bright: Math.random() > 0.97
+      });
+    }
+  }
+ 
+  function drawStars(t){
+    ctx.clearRect(0,0,canvas.width, canvas.height);
+    for(const s of stars){
+      const alpha = s.baseAlpha + Math.sin(t * s.twinkleSpeed + s.phase) * 0.25;
+      ctx.beginPath();
+      if(s.bright){
+        const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r*5);
+        grad.addColorStop(0, `rgba(255,250,235,${Math.max(alpha,0.3)})`);
+        grad.addColorStop(1, 'rgba(255,250,235,0)');
+        ctx.fillStyle = grad;
+        ctx.arc(s.x, s.y, s.r*5, 0, Math.PI*2);
+      } else {
+        ctx.fillStyle = `rgba(235,240,255,${Math.max(alpha,0.08)})`;
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      }
+      ctx.fill();
+    }
+    requestAnimationFrame(drawStars);
+  }
+ 
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(drawStars);
+ 
+  // ---- CTA click ----
+  document.getElementById('cta').addEventListener('click', () => {
+    document.getElementById('stage').classList.add('leaving');
+    audio.play();
+     startLyrics();
+    // This is where the lyric/music experience will take over.
+    setTimeout(() => {
+      // placeholder: next scene will be wired in once lyrics + audio are added
+      console.log('Transition to lyric experience');
+    }, 1300);
+  });
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    audio.pause();
+  } else {
+    if (audio.currentTime > 0 && !audio.ended) {
+      audio.play().catch(() => {});
+    }
+  }
+});
+
+  window.addEventListener("beforeunload", () => {
+  audio.pause();
+  audio.currentTime = 0;
+});
+
+function showLine(){
+  if(index >= lyrics.length) return;
+
+  // disparition
+  box.style.opacity = 0;
+
+  setTimeout(() => {
+    // changement de texte
+    box.innerText = lyrics[index];
+
+    // apparition
+    box.style.opacity = 1;
+
+    index++;
+  }, 1200); // temps du fade out
+}
+
+function startLyrics(){
+  setTimeout(() => {
+    showLine();
+
+    setInterval(() => {
+      showLine();
+    }, 9000); // change toutes les 5 sec
+
+  }, 14000); // commence après 15 sec
+}
+</script>
+ 
+</body>
+</html>
